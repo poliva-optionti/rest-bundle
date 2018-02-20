@@ -4,6 +4,9 @@ Provides some utilties to rapidly build Restful API's.
 
 > This library is not ready for release yet. Do not use in production!
 
+You can check the documentation [here](/src/Resources/docs/0.intro.md), but frist
+familiarize yourself with this readme.
+
 ## Features:
 - Create RESTful endpoints in seconds with our awesome RestController
 - Json-Schema forms by `limenius/liform`
@@ -17,7 +20,8 @@ Provides some utilties to rapidly build Restful API's.
 ## Roadmap:
 - Hypermedia Links Manager
 - Advanced Collection Filtering
-- Subresources
+- Subresource Route Support
+- Object Managers
 
 ## Install:
 
@@ -48,7 +52,7 @@ Then register the bundle in your kernel:
 ## Configuration
 
 ### Symfony Translator
-If you are using Symfony 4.0, before using this package you need to install the translation
+There's an issue using Symfony 4.0. Before using this package you need to install the translation
 component. You can do this with:
 
     composer req translator
@@ -84,10 +88,10 @@ To solve this, we recommend you the following configuration in your security con
             allow_if_all_abstain: true
 
 ## Usage
-Check [the docs](/src/Resources/docs/intro.md).
+To get a deep understanding on how this bundle works, read [the docs](/src/Resources/docs/0.intro.md).
 
 ## Credits
-This bundle incorporates services definitions and code from these other bundles, that
-were extracted to avoid dependencies in other bundles.
+This bundle incorporates services definitions and code from these other bundles that
+were extracted here to avoid dependency in other bundles.
 - `limenius/liform-bundle`
 - `samjarret/fractal-bundle`
