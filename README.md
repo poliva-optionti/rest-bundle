@@ -47,6 +47,14 @@ Then register the bundle in your kernel:
 
 ## Configuration
 
+### Symfony Translator
+If you are using Symfony 4.0, before using this package you need to install the translation
+component. You can do this with:
+
+    composer req translator
+
+Flex will take care of everything.
+
 ### Route Loading
 There's no need for a custom route loader like Knp's RestBundle. Simply load your
 Api Controllers with the following config, and your routes will have consistent names:

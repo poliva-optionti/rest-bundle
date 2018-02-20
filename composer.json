@@ -13,16 +13,13 @@
             "MNC\\RestBundle\\": "src"
         }
     },
-    "suggest": {
-        "symfony/translation": "~2.8|~3.0|^4.0"
-    },
     "require": {
         "php": ">=5.5.9",
-        "doctrine/orm": "^2.5",
         "pagerfanta/pagerfanta": "^1.0",
-        "symfony/framework-bundle": "~2.8|~3.0|^4.0",
+        "symfony/security-bundle": "~2.8|~3.0|^4.1",
+        "symfony/orm-pack": "^1.0",
+        "symfony/framework-bundle": "~2.8|~3.0|^4.1",
         "league/fractal": "^0.17",
-        "symfony/security": "~2.8|~3.0|^4.0",
         "limenius/liform": "^0.12"
     }
 }
