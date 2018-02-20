@@ -1,0 +1,24 @@
+{
+    "name": "mnavarrocarter/mnc-rest-bundle",
+    "license": "MIT",
+    "type": "symfony-bundle",
+    "authors": [
+        {
+            "name": "Matías Navarro Carter",
+            "email": "mnavarro@option.cl"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MNC\\RestBundle\\": "src"
+        }
+    },
+    "require": {
+        "php": ">=5.5.9",
+        "doctrine/orm": "^2.5",
+        "pagerfanta/pagerfanta": "^1.0",
+        "symfony/symfony": "3.4.*|^4.0",
+        "league/fractal": "^0.17",
+        "symfony/security": "3.4.*|^4.0"
+    }
+}

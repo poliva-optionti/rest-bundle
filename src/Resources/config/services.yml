@@ -1,0 +1,36 @@
+services:
+    _defaults:
+            # automatically injects dependencies in your services
+            autowire: true
+            # this means you cannot fetch services directly from the container via $container->get()
+            # if you need to do this, you can override this setting on individual services
+            public: false
+
+    # EVENT LISTENERS
+    MNC\RestBundle\EventListener\ApiExceptionListener:
+        arguments: ['%kernel.environment%']
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+
+    MNC\RestBundle\EventListener\RequestBodyListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 150 }
+
+    MNC\RestBundle\EventListener\RestControllerListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller }
+
+    # VOTERS
+    MNC\RestBundle\Security\OwnableResourceVoter:
+        tags:
+            - { name: security.voter }
+
+    # SERVICES
+    MNC\RestBundle\Fractalizer\Fractalizer:
+        arguments: ['@request_stack', '@router', '@sam_j_fractal.manager']
+        public: true
+
+    SamJ\FractalBundle\ContainerAwareManager:
+        public: true
+        calls:
+            - [setContainer, ['@service_container']]
