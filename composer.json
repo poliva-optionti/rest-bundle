@@ -20,7 +20,9 @@
         "symfony/framework-bundle": "~2.8|~3.0|^4.0",
         "league/fractal": "^0.17",
         "symfony/security": "~2.8|~3.0|^4.0",
-        "limenius/liform": "^0.12",
+        "limenius/liform": "^0.12"
+    },
+    "suggest": {
         "symfony/translation": "~2.8|~3.0|^4.0"
     }
 }
