@@ -1,0 +1,4 @@
+MNCRestBundle Documentation
+===========================
+
+## Contents
