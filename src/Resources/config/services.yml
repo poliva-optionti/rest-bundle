@@ -20,6 +20,36 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.controller }
 
+    # LIFORM
+    liform.add_schema_extension:
+        class: Limenius\Liform\Form\Extension\AddLiformExtension
+        tags:
+            - { name: form.type_extension, extended_type: '@Symfony\Component\Form\Extension\Core\Type\FormType' }
+
+    liform.serializer.form_error_normalizer:
+        class: Limenius\Liform\Serializer\Normalizer\FormErrorNormalizer
+        arguments: ['@translator.data_collector']
+        tags:
+            - { name: serializer.normalizer, priority: -10 }
+
+    liform.serializer.initial_values_normalizer:
+        class: Limenius\Liform\Serializer\Normalizer\InitialValuesNormalizer
+        tags:
+            - { name: serializer.normalizer, priority: -10 }
+
+    liform.resolver:
+        class: Limenius\Liform\Resolver
+        public: true
+
+    liform:
+        class: Limenius\Liform\Liform
+        public: true
+        arguments: ['@liform.resolver']
+
+    liform.guesser.validator:
+        class: Limenius\Liform\Guesser\ValidatorGuesser
+        arguments: ['@validator.mapping.class_metadata_factory']
+
     # VOTERS
     MNC\RestBundle\Security\OwnableResourceVoter:
         tags:
@@ -27,10 +57,13 @@ services:
 
     # SERVICES
     MNC\RestBundle\Fractalizer\Fractalizer:
-        arguments: ['@request_stack', '@router', '@sam_j_fractal.manager']
+        arguments:
+            - '@Symfony\Component\HttpFoundation\RequestStack'
+            - '@router'
+            - '@MNC\RestBundle\Fractalizer\ContainerAwareManager'
         public: true
 
-    SamJ\FractalBundle\ContainerAwareManager:
+    MNC\RestBundle\Fractalizer\ContainerAwareManager:
         public: true
         calls:
             - [setContainer, ['@service_container']]

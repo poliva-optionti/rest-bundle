@@ -6,7 +6,7 @@ Provides some utilties to rapidly build Restful API's.
 
 ### Features:
 - Create RESTful endpoints in seconds.
-- Json-Schema forms.
+- Json-Schema forms by `limenius/liform`
 - Entity Transformers by `league/fractal`
 - Eager Load selectable Hydration
 - Pagination at ORM level by `whiteoctober/pagerfanta`
@@ -18,3 +18,9 @@ Provides some utilties to rapidly build Restful API's.
 - Hypermedia Links Manager
 - Advanced Collection Filtering
 - Subresources
+
+### Credits
+This bundle incorporates services definitions and code from these other bundles, that
+were extracted to avoid dependencies in other bundles.
+- `limenius/liform-bundle`
+- `samjarret/fractal-bundle`
