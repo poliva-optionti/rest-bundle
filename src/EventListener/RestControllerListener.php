@@ -28,20 +28,14 @@ class RestControllerListener
      * @var Reader
      */
     private $reader;
-    /**
-     * @var TokenStorageInterface
-     */
-    private $tokenStorage;
 
     /**
      * RestControllerListener constructor.
      * @param Reader                $reader
-     * @param TokenStorageInterface $tokenStorage
      */
-    public function __construct(Reader $reader, TokenStorageInterface $tokenStorage)
+    public function __construct(Reader $reader)
     {
         $this->reader = $reader;
-        $this->tokenStorage = $tokenStorage;
     }
 
     /**
