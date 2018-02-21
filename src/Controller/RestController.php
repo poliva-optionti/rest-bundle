@@ -433,9 +433,9 @@ abstract class RestController extends Controller
             return new JsonResponse(null, 204);
         }
 
-        $data = $this->fractalize($data, $this->get($this->transformer));
+        $array = $this->fractalize($data, $this->get($this->transformer));
 
-        return JsonResponse::create($data, $statusCode, $headers);
+        return JsonResponse::create($array, $statusCode, $headers);
     }
 
     /**
