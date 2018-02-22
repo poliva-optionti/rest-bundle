@@ -22,6 +22,7 @@ familiarize yourself with this readme.
 - Advanced Collection Filtering
 - Subresource Route Support
 - Object Managers
+- Content Negotiation
 
 ## Install:
 

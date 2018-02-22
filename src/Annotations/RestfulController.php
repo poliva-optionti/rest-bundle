@@ -26,11 +26,6 @@ final class RestfulController
 
     /**
      * @var string
-     */
-    public $identifier = 'id';
-
-    /**
-     * @var string
      * @Required()
      */
     public $formClass;

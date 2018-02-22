@@ -3,7 +3,10 @@
 namespace MNC\RestBundle\EventListener;
 
 use Doctrine\Common\Annotations\Reader;
+use Doctrine\ORM\EntityManagerInterface;
 use MNC\RestBundle\Annotations\RestfulController;
+use MNC\RestBundle\Annotations\UriIdentifier;
+use MNC\RestBundle\Helper\RestInfo;
 use MNC\RestBundle\Helper\RouteActionVerb;
 use MNC\RestBundle\Controller\RestController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +26,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class RestControllerListener
 {
     const REST_ANNOTATION = 'MNC\RestBundle\Annotations\RestfulController';
+    const IDENTIFIER_ANNOT = 'MNC\RestBundle\Annotations\UriIdentifier';
+    const MANAGER_ANNOT = 'MNC\RestBundle\Annotations\ResourceManager';
 
     /**
      * @var Reader
@@ -59,9 +64,9 @@ class RestControllerListener
         }
 
         /** @var RestfulController $annot */
-        $annot = $this->reader->getClassAnnotation($reflController, self::REST_ANNOTATION);
+        $restAnnot = $this->reader->getClassAnnotation($reflController, self::REST_ANNOTATION);
 
-        if ($annot === null ) {
+        if ($restAnnot === null ) {
             return;
         }
 
@@ -70,36 +75,40 @@ class RestControllerListener
             throw new \Exception("To use @ResfulController annotation your $controller must extend $restController");
         }
 
+        // We reflect the entity to check its annotations.
+        $reflEntity = new \ReflectionClass($restAnnot->relatedEntity);
+
+        // We check for the identifier annotation.
+        $identifier = 'id';
+        /** @var UriIdentifier $idAnnot */
+        $idAnnot = $this->reader->getClassAnnotation($reflEntity, self::IDENTIFIER_ANNOT);
+        if ($idAnnot !== null) {
+            $identifier = $idAnnot->name;
+        }
+
+        // We check for the object manager annotation.
+        $manager = null;
+        /** @var UriIdentifier $managerAnnot */
+        $managerAnnot = $this->reader->getClassAnnotation($reflEntity, self::MANAGER_ANNOT);
+        if ($managerAnnot !== null) {
+            $manager = $managerAnnot->name;
+        }
+
         /** @var RestController $object */
-        $object = $event->getController()[0];
+        $controllerInstance = $event->getController()[0];
 
-        $pa = PropertyAccess::createPropertyAccessor();
+        // We put the RestController info in the request attributes so we can reuse them in other services
+        $request->attributes->set('_resource_name', $restAnnot->resourceName);
+        $request->attributes->set('_related_entity', $restAnnot->relatedEntity);
+        $request->attributes->set('_identifier', $identifier);
+        $request->attributes->set('_form_class', $restAnnot->formClass);
+        $request->attributes->set('_transformer_class', $restAnnot->transformerClass);
+        $request->attributes->set('_manager_class', $manager);
+        $request->attributes->set('_action_verb', $this->evaluateAction($request));
 
-        if ($pa->isWritable($object, 'name')) {
-            $pa->setValue($object, 'name', $annot->resourceName);
-        }
-        if ($pa->isWritable($object, 'entity')) {
-            $pa->setValue($object, 'entity', $annot->relatedEntity);
-        }
-        if ($pa->isWritable($object, 'identifier')) {
-            $pa->setValue($object, 'identifier', $annot->identifier);
-        }
-        if ($pa->isWritable($object, 'form')) {
-            $pa->setValue($object, 'form', $annot->formClass);
-        }
-        if ($pa->isWritable($object, 'transformer')) {
-            $pa->setValue($object, 'transformer', $annot->transformerClass);
-        }
-        if ($pa->isWritable($object, 'action')) {
-            $pa->setValue($object, 'action', $this->evaluateAction($request));
-        }
+        $restInfo = RestInfo::createFromRequest($request);
 
-        // We also put the RestController info in the request attributes so we can reuse them in other services
-        $request->attributes->set('_resource_name', $annot->resourceName);
-        $request->attributes->set('_related_entity', $annot->relatedEntity);
-        $request->attributes->set('_identifier', $annot->identifier);
-        $request->attributes->set('_form_class', $annot->formClass);
-        $request->attributes->set('_transformer_class', $annot->transformerClass);
+        $controllerInstance->boot($restInfo);
     }
 
     /**

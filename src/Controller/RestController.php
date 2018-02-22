@@ -2,14 +2,19 @@
 
 namespace MNC\RestBundle\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use League\Fractal\TransformerAbstract;
+use MNC\AgileBundle\ObjectManager\AbstractObjectManager;
 use MNC\RestBundle\ApiProblem\ApiError;
 use MNC\RestBundle\ApiProblem\ApiProblem;
 use MNC\RestBundle\ApiProblem\ApiProblemException;
 use MNC\RestBundle\Fractalizer\Fractalizer;
+use MNC\RestBundle\Helper\RestInfo;
+use MNC\RestBundle\Helper\RestInfoInterface;
 use MNC\RestBundle\Helper\RouteActionVerb;
+use MNC\RestBundle\Manager\AbstractResourceManager;
 use MNC\RestBundle\Security\OwnableResourceVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormInterface;
@@ -23,9 +28,10 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * This controller serves as a base controller for Rapid Api development. To
  * learn how to use it, see the docs for more info.
+ *
  * @package ApiBundle\Controller
  * @author Matías Navarro Carter <mnavarro@option.cl>
- * @docs http://docs.link.cl
+ * @docs https://github.com/mnavarrocarter/rest-bundle/blob/master/src/Resources/docs/1.rest-controller.md
  */
 abstract class RestController extends Controller
 {
@@ -40,6 +46,10 @@ abstract class RestController extends Controller
     /**
      * @var string
      */
+    protected $identifier;
+    /**
+     * @var string
+     */
     protected $form;
     /**
      * @var string
@@ -48,277 +58,63 @@ abstract class RestController extends Controller
     /**
      * @var string
      */
-    protected $identifier;
+    protected $manager;
     /**
      * @var string
      */
     protected $action;
+    /**
+     * @var RestInfoInterface
+     */
+    private $restInfo;
 
     /**
-     * @Route("", methods={"GET"})
-     * @param Request $request
-     * @return Response
-     * @throws \Exception
+     * This method boots the controller giving it the RestInfo object.
+     * Sets all the necessary params for this controller to work properly.
+     * Also passes the RestInfo to the Resource Manager.
+     * @param RestInfoInterface $restInfo
      */
-    public function indexAction(Request $request)
+    public function boot(RestInfoInterface $restInfo)
     {
-        $kernel = $this->get('kernel');
-        /** @var EntityRepository $repo */
-        $repo = $this->getDoctrine()->getRepository($this->entity);
-        $query = $repo->createQueryBuilder($this->name);
-
-        if ($query instanceof Response) {
-            return $query;
+        $this->name = $restInfo->getName();
+        $this->entity = $restInfo->getEntityClass();
+        $this->form = $restInfo->getFormClass();
+        $this->identifier = $restInfo->getIdentifier();
+        $this->action = $restInfo->getActionVerb();
+        $this->transformer = $restInfo->getTransformerClass();
+        $this->manager = $restInfo->getManagerClass();
+        $this->restInfo = $restInfo;
+        $manager = $this->getManager();
+        if ($manager instanceof AbstractResourceManager) {
+            $manager->setRestInfo($restInfo);
         }
-
-        return $this->createResourceResponse($query, 200);
     }
 
     /**
-     * @Route("/new", methods={"GET"})
-     * @param Request $request
-     * @return JsonResponse
+     * @return RestInfoInterface
      */
-    public function newAction(Request $request)
+    protected function getRestInfo()
     {
-        $entity = new $this->entity;
-
-        $form = $this->createForm($this->form, $entity, [
-            'validation_groups' => ['Default', 'New'],
-            'csrf_protection' => false
-        ]);
-
-        $normalizedForm = $this->get('liform')->transform($form);
-
-        return new JsonResponse($normalizedForm, 200);
+        return $this->restInfo;
     }
 
     /**
-     * @Route("/{id}/edit", methods={"GET"})
-     * @param Request $request
-     * @param         $id
-     * @return JsonResponse
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @return AbstractResourceManager|EntityManagerInterface
      */
-    public function editAction(Request $request, $id)
+    protected function getManager()
     {
-        $entity = $this->getResourceByIdentifierQuery($id)
-            ->getQuery()->getOneOrNullResult();
-
-        if ($entity === null) {
-            throw $this->createNotFoundException("The requested $this->name resource could not be found.");
+        if ($this->manager === null) {
+            return $this->get('doctrine.orm.entity_manager');
         }
-
-        $form = $this->createForm($this->form, $entity, [
-            'validation_groups' => ['Default', 'Update'],
-            'csrf_protection' => false
-        ]);
-
-        $normalizedForm = $this->get('liform')->transform($form);
-
-        return new JsonResponse($normalizedForm, 200);
+        return $this->get($this->manager);
     }
 
     /**
-     * @Route("/{id}", methods={"GET"})
-     * @param Request $request
-     * @param         $id
-     * @return Response
-     * @throws \Exception
+     * @return TransformerAbstract
      */
-    public function showAction(Request $request, $id)
+    protected function getTransformer()
     {
-        $token = $this->get('security.token_storage')->getToken();
-
-        $query = $this->getResourceByIdentifierQuery($id);
-        $result = $query->getQuery()->getResult();
-
-        if ($result === null) {
-            throw $this->createNotFoundException("The requested $this->name resource could not be found.");
-        }
-
-        if (sizeof($result) <= 1) {
-            $result = array_shift($result);
-            $this->denyAccessUnlessGranted(OwnableResourceVoter::VIEW, $result);
-        } else {
-            foreach ($result as $item) {
-                $this->denyAccessUnlessGranted(OwnableResourceVoter::VIEW, $item);
-            }
-        }
-
-        return $this->createResourceResponse($result, 200);
-    }
-
-    /**
-     * @Route("", methods={"POST"})
-     * @param Request $request
-     * @return Response
-     * @throws \Exception
-     */
-    public function storeAction(Request $request)
-    {
-        $token = $this->get('security.token_storage')->getToken();
-
-        $entity = new $this->entity;
-
-        $form = $this->createForm($this->form, $entity , [
-            'validation_groups' => ['Default', 'New'],
-            'csrf_protection' => false
-        ]);
-
-        $form->submit($request->request->all());
-
-        if ($form->isValid() && $form->isSubmitted()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($entity);
-            $em->flush();
-
-            $url = $this->buildLocationHeaderUrl($entity);
-
-            return $this->createResourceResponse($entity, 201, [
-                'Location' => $url
-            ]);
-        }
-        throw $this->createValidationErrorException($form);
-    }
-
-    /**
-     * @Route("/{id}", methods={"PATCH", "PUT", "POST"})
-     * @param Request $request
-     * @param         $id
-     * @return Response
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Exception
-     */
-    public function updateAction(Request $request, $id)
-    {
-        $token = $this->get('security.token_storage')->getToken();
-
-        $entity = $this->getResourceByIdentifierQuery($id)
-            ->getQuery()->getOneOrNullResult();
-
-        if ($entity === null) {
-            throw $this->createNotFoundException("The requested $this->name resource could not be found.");
-        }
-
-        $form = $this->createForm($this->form, $entity, [
-            'validation_groups' => ['Default', 'Update'],
-            'csrf_protection' => false
-        ]);
-
-        $form->submit($request->request->all(), !$request->isMethod('PATCH'));
-
-        $this->denyAccessUnlessGranted(OwnableResourceVoter::UPDATE, $entity);
-
-        if ($form->isValid() && $form->isSubmitted()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($entity);
-            $em->flush();
-
-            $url = $this->buildLocationHeaderUrl($entity);
-
-            return $this->createResourceResponse($entity, 200, [
-                'Location' => $url
-            ]);
-        }
-        throw $this->createValidationErrorException($form);
-
-    }
-
-    /**
-     * @Route("/{id}", methods={"DELETE"})
-     * @param Request $request
-     * @param         $id
-     * @return Response
-     * @throws \Exception
-     */
-    public function deleteAction(Request $request, $id)
-    {
-        $entity = $this->getResourceByIdentifierQuery($id)
-            ->getQuery()->getOneOrNullResult();
-
-        if ($entity === null) {
-            throw $this->createNotFoundException("The requested $this->name resource could not be found.");
-        }
-
-        // TODO: Override this method to throw an Api Problem
-        $this->denyAccessUnlessGranted(OwnableResourceVoter::DELETE, $entity);
-
-        $em = $this->getDoctrine()->getManager();
-        $em->remove($entity);
-        $em->flush();
-
-        return $this->createResourceResponse(null, 204);
-    }
-
-    /**
-     * @param $name
-     * @return $this
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-    /**
-     * @param mixed $entity
-     * @return RestController
-     */
-    public function setEntity($entity)
-    {
-        $this->entity = $entity;
-        return $this;
-    }
-
-    /**
-     * @param mixed $form
-     * @return RestController
-     */
-    public function setForm($form)
-    {
-        $this->form = $form;
-        return $this;
-    }
-
-    /**
-     * @param $transformer
-     * @return $this
-     */
-    public function setTransformer($transformer)
-    {
-        $this->transformer = $transformer;
-        return $this;
-    }
-
-    /**
-     * @param mixed $identifier
-     * @return RestController
-     */
-    public function setIdentifier($identifier)
-    {
-        $this->identifier = $identifier;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAction()
-    {
-        return $this->action;
-    }
-
-    /**
-     * @param string $action
-     * @return RestController
-     */
-    public function setAction($action)
-    {
-        $this->action = $action;
-        return $this;
+        return $this->get($this->transformer);
     }
 
     /**
@@ -326,7 +122,7 @@ abstract class RestController extends Controller
      * @param $id
      * @return QueryBuilder
      */
-    private function getResourceByIdentifierQuery($id)
+    protected function getResourceByIdentifierQuery($id)
     {
         /** @var EntityRepository $repo */
         $repo = $this->getDoctrine()->getRepository($this->entity);
@@ -360,7 +156,7 @@ abstract class RestController extends Controller
      * @param null   $subject
      * @param string $message
      */
-    public function denyAccessUnlessGranted($attributes, $subject = null, $message = 'Access Denied.')
+    protected function denyAccessUnlessGranted($attributes, $subject = null, $message = 'Access Denied.')
     {
         if (!$this->isGranted($attributes, $subject)) {
             $request = $this->get('request_stack')->getCurrentRequest();
@@ -374,7 +170,7 @@ abstract class RestController extends Controller
      * @param \Exception|null $previous
      * @return ApiProblemException|NotFoundHttpException
      */
-    public function createNotFoundException($message = 'Not Found.', \Exception $previous = null)
+    protected function createNotFoundException($message = 'Not Found.', \Exception $previous = null)
     {
         $apiProblem = ApiProblem::create(404, $message);
         return $apiProblem->toException();
@@ -385,7 +181,7 @@ abstract class RestController extends Controller
      * @param \Exception|null $previous
      * @return ApiProblemException|\Symfony\Component\Security\Core\Exception\AccessDeniedException
      */
-    public function createAccessDeniedException($message = 'Access Denied.', \Exception $previous = null)
+    protected function createAccessDeniedException($message = 'Access Denied.', \Exception $previous = null)
     {
         $apiProblem = ApiProblem::create(403, $message);
         return $apiProblem->toException();
@@ -396,7 +192,7 @@ abstract class RestController extends Controller
      * @param \Exception|null $previous
      * @return ApiProblemException
      */
-    public function createBadRequestException($message = 'Bad Request.', \Exception $previous = null)
+    protected function createBadRequestException($message = 'Bad Request.', \Exception $previous = null)
     {
         $apiProblem = ApiProblem::create(400, $message);
         return $apiProblem->toException();
@@ -433,7 +229,7 @@ abstract class RestController extends Controller
             return new JsonResponse(null, 204);
         }
 
-        $array = $this->fractalize($data, $this->get($this->transformer));
+        $array = $this->fractalize($data, $this->getTransformer());
 
         return JsonResponse::create($array, $statusCode, $headers);
     }
