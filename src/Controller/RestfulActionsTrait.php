@@ -227,4 +227,23 @@ trait RestfulActionsTrait
 
         return $this->createResourceResponse(null, 204);
     }
+
+    /**
+     * @Route("/{id}/{subresource}", methods={"GET"})
+     * @param Request $request
+     * @param         $id
+     */
+    public function indexSubresourceAction(Request $request, $id)
+    {
+
+    }
+
+    /**
+     * @Route("/{id}/{subresource}", methods={"POST"})
+     * @param Request $request
+     */
+    public function storeSubresourceAction(Request $request)
+    {
+
+    }
 }

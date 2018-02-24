@@ -4,7 +4,7 @@ namespace MNC\RestBundle\EventListener;
 
 use Doctrine\Common\Annotations\Reader;
 use Doctrine\ORM\EntityManagerInterface;
-use MNC\RestBundle\Annotations\RestfulController;
+use MNC\RestBundle\Annotations\Resource;
 use MNC\RestBundle\Annotations\UriIdentifier;
 use MNC\RestBundle\Helper\RestInfo;
 use MNC\RestBundle\Helper\RouteActionVerb;
@@ -15,7 +15,7 @@ use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
- * This Listener checks wether a Controller is tagged with the @RestfulController
+ * This Listener checks wether a Controller is tagged with the @Resource
  * annotation. Also checks if this controller extends MNC\RestBundle\Controller\RestController
  * If so, sets the controller to work with the annotation options, leveraging all
  * the power of the annotation.
@@ -25,7 +25,7 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
  */
 class RestControllerListener
 {
-    const REST_ANNOTATION = 'MNC\RestBundle\Annotations\RestfulController';
+    const RESOURCE_ANNOT = 'MNC\RestBundle\Annotations\Resource';
     const IDENTIFIER_ANNOT = 'MNC\RestBundle\Annotations\UriIdentifier';
     const MANAGER_ANNOT = 'MNC\RestBundle\Annotations\ResourceManager';
 
@@ -63,8 +63,8 @@ class RestControllerListener
             return;
         }
 
-        /** @var RestfulController $annot */
-        $restAnnot = $this->reader->getClassAnnotation($reflController, self::REST_ANNOTATION);
+        /** @var Resource $annot */
+        $restAnnot = $this->reader->getClassAnnotation($reflController, self::RESOURCE_ANNOT);
 
         if ($restAnnot === null ) {
             return;
@@ -72,7 +72,7 @@ class RestControllerListener
 
         $restController = RestController::class;
         if (!$reflController->isSubclassOf($restController)) {
-            throw new \Exception("To use @ResfulController annotation your $controller must extend $restController");
+            throw new \Exception(sprintf('To use %s annotation your %s must extend %s', self::RESOURCE_ANNOT, $controller, $restController));
         }
 
         // We reflect the entity to check its annotations.

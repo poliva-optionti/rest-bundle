@@ -235,14 +235,11 @@ abstract class RestController extends Controller
     }
 
     /**
-     * @param null $class
      * @return \Doctrine\Common\Persistence\ObjectRepository
      */
-    protected function getRepo($class = null) {
-        if ($class) {
-            return $this->getDoctrine()->getRepository($class);
-        }
-        return $this->getDoctrine()->getRepository($this->entity);
+    protected function getRepo()
+    {
+        return $this->getManager()->getRepository($this->entity);
     }
 
     /**
@@ -253,6 +250,6 @@ abstract class RestController extends Controller
      */
     protected function fractalize($data, TransformerAbstract $transformer)
     {
-        return $this->get(Fractalizer::class)->fractalize($data, $transformer);
+        return $this->get(Fractalizer::class)->fractalize($data, $transformer, $this->getRestInfo()->getName());
     }
 }

@@ -9,19 +9,19 @@ familiarize yourself with this readme.
 
 ## Features:
 - Create RESTful endpoints in seconds with our awesome RestController
+- Transformation/Serialization layer by `league/fractal`
 - Json-Schema forms by `limenius/liform`
-- Entity Transformers by `league/fractal`
 - Eager Load selectable Hydration
 - Pagination at ORM level by `whiteoctober/pagerfanta`
-- Securing your entitites implementing `OwnableInterface`
-- Json Body Parser
+- Easily control access to your resources implementing `OwnableInterface`
+- Json Body Parser Listener
 - RFC 7807 Problem Details implementation for errors.
+- Resource Managers for cleaning your controllers.
+- Subresources route support
 
 ## Roadmap:
 - Hypermedia Links Manager
 - Advanced Collection Filtering
-- Subresource Route Support
-- Object Managers
 - Content Negotiation
 
 ## Install:
@@ -61,7 +61,7 @@ component. You can do this with:
 Flex will take care of everything.
 
 ### Route Loading
-There's no need for a custom route loader like Knp's RestBundle. Simply load your
+There's no need for a custom route loader like the one in FOSRestBundle. Simply load your
 Api Controllers with the following config, and your routes will have consistent names:
 
     api:

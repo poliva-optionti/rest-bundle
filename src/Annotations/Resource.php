@@ -10,7 +10,7 @@ use Doctrine\Common\Annotations\Annotation\Target;
  * @Annotation
  * @Target("CLASS")
  */
-final class RestfulController
+final class Resource
 {
     /**
      * @var string

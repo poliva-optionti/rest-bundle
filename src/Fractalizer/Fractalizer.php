@@ -10,6 +10,7 @@ use League\Fractal\Pagination\PagerfantaPaginatorAdapter;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
 use League\Fractal\TransformerAbstract;
+use MNC\RestBundle\Helper\RestInfoInterface;
 use Pagerfanta\Adapter\ArrayAdapter;
 use Pagerfanta\Adapter\DoctrineCollectionAdapter;
 use Pagerfanta\Adapter\DoctrineORMAdapter;
@@ -51,7 +52,7 @@ class Fractalizer
      * @return array
      * @throws \Exception
      */
-    public function fractalize($data, TransformerAbstract $transformer)
+    public function fractalize($data, TransformerAbstract $transformer, $resourceKey = null)
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -66,7 +67,7 @@ class Fractalizer
             $paginator = $this->instantiatePaginator($data);
             $results = $paginator->getPaginator()->getCurrentPageResults();
 
-            $resource = new Collection($results, $transformer);
+            $resource = new Collection($results, $transformer, $resourceKey);
             $resource->setPaginator($paginator);
             if ($request->query->has('with')) {
                 $this->manager->parseIncludes($request->query->get('with'));
@@ -75,7 +76,7 @@ class Fractalizer
             if ($request->query->has('with')) {
                 $this->manager->parseIncludes($request->query->get('with'));
             }
-            $resource = new Item($data, $transformer);
+            $resource = new Item($data, $transformer, $resourceKey);
         }
         return $this->manager->createData($resource)->toArray();
     }
@@ -93,8 +94,8 @@ class Fractalizer
 
         $adapter = $this->instantiateAdapter($data);
         $pagerfanta = new Pagerfanta($adapter);
-        $pagerfanta->setMaxPerPage((int) $request->query->get('size') ?: 10);
-        $pagerfanta->setCurrentPage((int) $request->query->get('page') ?: 1);
+        $pagerfanta->setMaxPerPage($request->query->getInt('size') ?: 10);
+        $pagerfanta->setCurrentPage($request->query->getInt('page') ?: 1);
 
         $paginator = new PagerfantaPaginatorAdapter($pagerfanta, function($page) use ($request, $router) {
             $route = $request->attributes->get('_route');
