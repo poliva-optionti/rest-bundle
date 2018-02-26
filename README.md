@@ -1,4 +1,4 @@
-MNC RestBundle
+Option RestBundle
 ==============
 Provides some utilties to rapidly build Restful API's.
 
