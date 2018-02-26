@@ -16,8 +16,8 @@ class ApiProblem implements ApiProblemInterface
     const CONTENT_TYPE = 'application/problem+json';
 
     private static $titles = [
-        ApiError::TYPE_VALIDATION_ERROR     => 'There was a validation error',
-        ApiError::TYPE_AUTHORIZATION_ERROR  => 'There was an authorization error',
+        ApiError::TYPE_VALIDATION_ERROR => 'There was a validation error',
+        ApiError::TYPE_AUTHORIZATION_ERROR => 'There was an authorization error',
         ApiError::TYPE_INVALID_REQUEST_BODY_FORMAT => 'Invalid request body format',
         ApiError::TYPE_DATABASE_ERROR => 'There was a database error'
     ];
@@ -56,6 +56,11 @@ class ApiProblem implements ApiProblemInterface
      * It may or may not yield further information if dereferenced.
      */
     private $instance;
+    /**
+     * @var array
+     * Some other extra keys for holding error data.
+     */
+    private $extra = [];
 
     /**
      * ApiProblem constructor.
@@ -68,7 +73,7 @@ class ApiProblem implements ApiProblemInterface
     {
         $this->status = $status;
         $this->type = $type;
-        if ($type !== 'about:blank' ) {
+        if ($type !== 'about:blank') {
             if (!isset(self::$titles[$type])) {
                 throw new \InvalidArgumentException("No title for type $type");
             }
@@ -103,6 +108,7 @@ class ApiProblem implements ApiProblemInterface
         $this->status === null ?: $data['status'] = $this->status;
         $this->detail === null ?: $data['detail'] = $this->detail;
         $this->instance === null ?: $data['instance'] = $this->instance;
+        array_merge($data, $this->extra);
         return $data;
     }
 
@@ -190,5 +196,14 @@ class ApiProblem implements ApiProblemInterface
     {
         $this->instance = $instance;
         return $this;
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     */
+    public function set($key, $value)
+    {
+        $this->extra[$key] = $value;
     }
 }

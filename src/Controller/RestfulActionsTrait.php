@@ -12,6 +12,7 @@ use MNC\RestBundle\Fractalizer\Fractalizer;
 use MNC\RestBundle\Helper\RestInfo;
 use MNC\RestBundle\Helper\RestInfoInterface;
 use MNC\RestBundle\Helper\RouteActionVerb;
+use MNC\RestBundle\Security\OwnableInterface;
 use MNC\RestBundle\Security\OwnableResourceVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\FormInterface;
@@ -133,7 +134,7 @@ trait RestfulActionsTrait
      */
     public function storeAction(Request $request)
     {
-        $token = $this->get('security.token_storage')->getToken();
+        $user = $this->getUser();
 
         $entity = new $this->entity;
 
@@ -145,6 +146,10 @@ trait RestfulActionsTrait
         $form->submit($request->request->all());
 
         if ($form->isValid() && $form->isSubmitted()) {
+
+            if ($entity instanceof OwnableInterface AND $user !== null AND $entity->getOwner() === null) {
+                $entity->setOwner($user);
+            }
 
             $em = $this->getManager();
             $em->persist($entity);
@@ -188,6 +193,10 @@ trait RestfulActionsTrait
         $this->denyAccessUnlessGranted(OwnableResourceVoter::UPDATE, $entity);
 
         if ($form->isValid() && $form->isSubmitted()) {
+
+            if ($entity instanceof OwnableInterface AND $user !== null AND $entity->getOwner() === null) {
+                $entity->setOwner($user);
+            }
 
             $em = $this->getDoctrine()->getManager();
             $em->persist($entity);

@@ -32,9 +32,9 @@ class ApiExceptionListener
 
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
-        if ($this->environment === 'dev') {
-            return;
-        }
+//        if ($this->environment === 'dev') {
+//            return;
+//        }
 
         $exception = $event->getException();
 

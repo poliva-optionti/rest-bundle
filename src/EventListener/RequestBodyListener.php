@@ -1,6 +1,7 @@
 <?php
 
 namespace MNC\RestBundle\EventListener;
+
 use MNC\RestBundle\ApiProblem\ApiError;
 use MNC\RestBundle\ApiProblem\ApiProblem;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
@@ -19,7 +20,7 @@ class RequestBodyListener
     {
         $request = $event->getRequest();
         $content = $request->getContent();
-        if (!$content OR !$request->headers->get('content-type') === 'application/json') {
+        if ($request->isMethod('GET') OR !$content OR $request->headers->get('Content-Type') !== 'application/json') {
             return;
         }
 

@@ -16,6 +16,10 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.request, priority: 150 }
 
+    MNC\RestBundle\EventListener\FormatListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: -40 }
+
     MNC\RestBundle\EventListener\RestControllerListener:
         tags:
             - { name: kernel.event_listener, event: kernel.controller }
