@@ -126,14 +126,7 @@ abstract class RestController extends Controller
     {
         /** @var EntityRepository $repo */
         $repo = $this->getDoctrine()->getRepository($this->entity);
-        $query = $repo->createQueryBuilder($this->name);
-        if (strpos(',', $id) === false) {
-            $id = explode(',', $id);
-            return $query->andWhere($query->expr()->in($this->name . '.' . $this->identifier, ':identifier'))
-                ->setParameter('identifier', $id);
-        }
-        return $query->andWhere($this->name.'.'.$this->identifier = ':identifier')
-            ->setParameter('identifier', $id);
+        return $repo->findByIdentifierQuery($this->identifier, $id);
     }
 
     /**

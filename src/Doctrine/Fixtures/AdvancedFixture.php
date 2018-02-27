@@ -3,7 +3,6 @@
 namespace MNC\RestBundle\Doctrine\Fixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Cache\FilesystemCache;
 use Doctrine\Common\Persistence\ObjectManager;
 use Faker\Factory;
 
@@ -21,11 +20,6 @@ abstract class AdvancedFixture extends Fixture
     protected $faker;
 
     /**
-     * @var FilesystemCache
-     */
-    protected $cache;
-
-    /**
      * @var FixtureCollection[]
      */
     protected $collectionRepository = [];
@@ -36,7 +30,6 @@ abstract class AdvancedFixture extends Fixture
     public function __construct()
     {
         $this->faker = Factory::create();
-        $this->cache = new FilesystemCache('var/cache-fixtures');
     }
 
     /**
@@ -64,24 +57,6 @@ abstract class AdvancedFixture extends Fixture
             return array_shift($items);
         }
         return $this->getCollection($manager, $class);
-    }
-
-    /**
-     * @param $class
-     * @return FixtureCollection
-     * @throws AdvancedFixtureException
-     */
-    protected function fetchCollection($class)
-    {
-        if (!$this->cache->contains($class)) {
-            throw AdvancedFixtureException::noCollectionForClass($class);
-        }
-        /** @var FixtureCollection $collection */
-        $collection = $this->cache->fetch($class);
-        if ($collection->isEmpty()) {
-            throw AdvancedFixtureException::noCollectionForClass($class);
-        }
-        return $collection;
     }
 
     /**

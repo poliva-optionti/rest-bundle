@@ -56,9 +56,9 @@ class Fractalizer
     {
         $request = $this->requestStack->getCurrentRequest();
 
-        if ($data instanceof QueryBuilder && $request->query->has('with')) {
-            $data = $this->eagerLoadWith($data);
-        }
+//        if ($data instanceof QueryBuilder && $request->query->has('with')) {
+//            $data = $this->eagerLoadWith($data);
+//        }
 
         if ($this->isPluralResponse($data)) {
 

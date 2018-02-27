@@ -24,6 +24,11 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.controller }
 
+    # MAKERS
+    MNC\RestBundle\Maker\MakeResource:
+        tags:
+            - { name: maker.command }
+
     # LIFORM
     liform.add_schema_extension:
         class: Limenius\Liform\Form\Extension\AddLiformExtension

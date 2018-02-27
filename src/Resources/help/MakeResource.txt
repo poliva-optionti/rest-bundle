@@ -1,0 +1,13 @@
+The <info>%command.name%</info> command generates a new Resource.
+
+<info>php %command.full_name% Post</info>
+
+If the argument is missing, the command will ask for the resource name interactively.
+
+This command will create the following:
+    - A Doctrine Entity class
+    - A Repository class
+    - A Manager class
+    - A Transformer class
+    - A Form class
+    - A Controller class
