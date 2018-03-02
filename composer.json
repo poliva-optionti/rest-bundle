@@ -20,7 +20,9 @@
         "symfony/orm-pack": "^1.0",
         "symfony/framework-bundle": "~2.8|~3.0|^4.0",
         "league/fractal": "^0.17",
-        "limenius/liform": "^0.12"
+        "limenius/liform": "^0.12",
+	"symfony/translation": "^4.0",
+        "symfony/validator": "^4.0"
     },
     "suggests": {
         "symfony/flex": "For an easier bundle instalation",
