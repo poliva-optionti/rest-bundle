@@ -149,46 +149,13 @@ abstract class RestController extends Controller
      * @param null   $subject
      * @param string $message
      */
-    protected function denyAccessUnlessGranted($attributes, $subject = null, $message = 'Access Denied.')
+    protected function denyAccessUnlessGranted($attributes, $subject = null, string $message = 'Access Denied.')
     {
         if (!$this->isGranted($attributes, $subject)) {
             $request = $this->get('request_stack')->getCurrentRequest();
             $message = sprintf('You do not have permissions to %s the requested resource', RouteActionVerb::findVerb($request->attributes->get('_route')));
             throw $this->createAccessDeniedException($message);
         }
-    }
-
-    /**
-     * @param string          $message
-     * @param \Exception|null $previous
-     * @return ApiProblemException|NotFoundHttpException
-     */
-    protected function createNotFoundException($message = 'Not Found.', \Exception $previous = null)
-    {
-        $apiProblem = ApiProblem::create(404, $message);
-        return $apiProblem->toException();
-    }
-
-    /**
-     * @param string          $message
-     * @param \Exception|null $previous
-     * @return ApiProblemException|\Symfony\Component\Security\Core\Exception\AccessDeniedException
-     */
-    protected function createAccessDeniedException($message = 'Access Denied.', \Exception $previous = null)
-    {
-        $apiProblem = ApiProblem::create(403, $message);
-        return $apiProblem->toException();
-    }
-
-    /**
-     * @param string          $message
-     * @param \Exception|null $previous
-     * @return ApiProblemException
-     */
-    protected function createBadRequestException($message = 'Bad Request.', \Exception $previous = null)
-    {
-        $apiProblem = ApiProblem::create(400, $message);
-        return $apiProblem->toException();
     }
 
     /**
