@@ -23,8 +23,10 @@
         "limenius/liform": "^0.12",
         "symfony/form": "~2.8|~3.0|^4.0",
         "symfony/translation": "~2.3|~3.0|^4.0",
-        "symfony/serializer": "~2.8|~3.0|^4.0",
-        "symfony/validator": "~2.8|~3.0|^4.0"
+        "symfony/validator": "~2.8|~3.0|^4.0",
+        "symfony/stopwatch": "^3.3|^4.0",
+        "symfony/twig-bundle": "^3.3|^4.0",
+        "symfony/web-profiler-bundle": "^3.3|^4.0"
     },
     "suggests": {
         "symfony/flex": "For an easier bundle instalation",
